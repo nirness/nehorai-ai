@@ -1,68 +1,128 @@
 # Nehorai AI — v2 Roadmap
 
-> v1 זה הבסיס. v2 זה כשנגדל.
+> v1 זה prompt pack. v2 זה כשנבנה משהו אמיתי.
 
 ---
 
-## מה v1 נותן
+## הרעיון הגדול
 
-- Prompt pack לכל כלי מרכזי
-- Catchphrase bank
-- Style guide
-- Examples
-- Copy-paste install
+v1 עובד כי ה-LLMs טובים מספיק לפרש instructions.  
+אבל prompt בלבד לא יחזיק — חזרתיות, inconsistency, ו-drift מגיעים מהר.
+
+v2 הוא **middleware layer** שעוטף כל LLM ומאכף את הפרסונה *מחוץ* ל-prompt:
+
+```
+user input
+    ↓
+[ Tone Router ]        ← מחליט כמה "נהוראי" לפי סוג הבקשה
+    ↓
+[ LLM call ]           ← כל מודל — OpenAI, Anthropic, Gemini, local
+    ↓
+[ Phrase Injector ]    ← מוסיף catchphrases לפי placement rules
+    ↓
+[ Repetition Guard ]   ← מוודא שאותו משפט לא חזר לאחרונה
+    ↓
+[ Hebrew Naturalizer ] ← מוודא שזה נשמע עברית מדוברת, לא מתורגמת
+    ↓
+styled response
+```
 
 ---
 
-## v2 — כיוונים
+## מה בונים
 
-### Phrase Rotation Engine
-מנגנון פשוט (JS/Python) שמבטיח שאותו catchphrase לא יחזור שוב ב-n תשובות.  
-אין צורך ב-LLM בשביל זה — רשימה + counter.
+### A. Phrase Registry — `phrases.he.json`
 
-### CLI Installer
+כל catchphrase עם metadata:
+
+```json
+{
+  "phrase": "נודר נדר, זאת התשובה.",
+  "speaker": "abba",
+  "placement": "close",
+  "tone_weight": 0.8,
+  "frequency_cap": 3,
+  "avoid_when": ["sensitive", "code_block"]
+}
+```
+
+גמישות מלאה בלי לגעת ב-prompt.
+
+### B. Tone Router
+
+קלסיפיקציה פשוטה של הבקשה:
+
+| סוג | כמה נהוראי | catchphrases |
+|---|---|---|
+| קוד / טכני | נמוך | רק לפני ואחרי |
+| שאלה כללית | בינוני | opener + closer |
+| החלטה / חיים | גבוה | full Poscast |
+| רגיש | מינימום | 0–1 בלבד |
+
+### C. SDK
+
+```bash
+npm install nehorai-ai
+pip install nehorai-ai
+```
+
+```ts
+import { nehoraiFetch } from 'nehorai-ai';
+
+const response = await nehoraiFetch({
+  model: 'gpt-4o',
+  messages: [...],
+  persona: 'balanced',  // lite | balanced | full-poscast
+});
+```
+
+### D. Adapters
+
+- `@nehorai-ai/openai`
+- `@nehorai-ai/anthropic`
+- `@nehorai-ai/gemini`
+- `@nehorai-ai/generic`
+
+### E. CLI Installer
+
 ```bash
 npx nehorai-ai install --tool cursor
 npx nehorai-ai install --tool claude
 npx nehorai-ai install --tool chatgpt
 ```
-מעתיק את הקובץ הנכון למקום הנכון, אוטומטית.
 
-### Content Packs
-גרסאות מכוונות לפי אופי:
-- `--mode aba` — 90% קול האבא, מינימום נהוראי
-- `--mode nehorai` — 60% נהוראי, יותר שקט ויבש
-- `--mode full-poscast` — מקסימום וייב
+### F. Content Packs
 
-### IDE Extensions
-- VS Code Extension — inject ל-Copilot/Continue system prompt
-- JetBrains Plugin
+```bash
+npx nehorai-ai install --mode aba       # 90% אבא
+npx nehorai-ai install --mode nehorai   # 60% נהוראי, יבש, עמוק-שטוח
+npx nehorai-ai install --mode poscast   # הכל פתוח
+```
 
-### Benchmark Prompts
-סט של 20+ prompt-and-expected-response שאפשר לבדוק איתם שהפרסונה נשמרת בין מודלים.
+### G. Eval Harness
 
-### Browser Extension
-לוגיקה פשוטה שמוסיפה את ה-system prompt ל-ChatGPT web ואוטומטית.
-
-### Stronger Dev Preset
-גרסה מכוונת לפיתוח עם:
-- יותר "עושים סדר" ופחות Poscast
-- הגדרות ספציפיות לקוד ב-RTL
-- דוגמאות code review
+```bash
+npx nehorai-ai eval --preset balanced --model gpt-4o
+# ✅ Hebrew naturalness:  94%
+# ✅ Catchphrase variety: 87%
+# ❌ Repetition rate:     23%  (threshold: 15%)
+# ✅ Code output clean:  100%
+```
 
 ---
 
-## מה עדיין לא לv2
+## מה לא ב-v2
 
-- ❌ Agent system
 - ❌ Fine-tuning
+- ❌ Agent orchestration
 - ❌ Learning engine
-- ❌ Server-side middleware
-- ❌ Analytics platform
+- ❌ Memory server
 
 ---
 
 ## איך לתרום
 
-Pull requests מתקבלים לכל אחד מהכיוונים האלה.  
-פתח Issue עם `[v2]` בכותרת ובוא נדון.
+פתח Issue עם `[v2]` בכותרת.  
+הכי נצרך: מי שרוצה לבנות את ה-Phrase Registry ואת ה-Node SDK.
+
+נודר נדר — זה יהיה משהו.
