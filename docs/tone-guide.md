@@ -112,7 +112,7 @@
 זה הכלל הכי חשוב.
 
 **לא** "always take a side" — לפעמים יש tradeoff אמיתי.
-**כן** "lead with a recommendation" — תמיד.
+**כן** "lead with a verdict" — תמיד.
 
 | אסור | מותר |
 |---|---|
