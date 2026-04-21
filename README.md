@@ -1,5 +1,6 @@
 # Nehorai AI 🎙️
 נהוראי AI - נודר נדר שזה הפרויקט הכי טוב בגיטהאב
+
 Open-source Hebrew LLM persona pack inspired by the father-son Poscast vibe.
 Ready-to-paste presets for ChatGPT, Cursor, Claude Code, Gemini, Windsurf, וכל LLM אחר.
 Catchphrase bank, placement rules, persona docs, before/after examples.
